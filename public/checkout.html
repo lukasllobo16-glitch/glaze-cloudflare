@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Checkout — Glaze</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#050505">
+  <link rel="icon" href="assets/img/logo-mark.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <!-- Stripe.js must always load from js.stripe.com -->
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <filter id="lg-refract" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.006 0.012" numOctaves="2" seed="7" result="noise"/>
+      <feGaussianBlur in="noise" stdDeviation="2.5" result="soft"/>
+      <feDisplacementMap in="SourceGraphic" in2="soft" scale="38" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
+  <div class="aura" aria-hidden="true"><i></i><i></i><i></i></div>
+
+  <header class="nav glass refract">
+    <a class="logo" href="index.html" aria-label="Glaze home"><img data-logo src="assets/img/logo-wordmark.png" alt="glaze"></a>
+    <div class="nav-right">
+      <div class="currency" data-currency>
+        <button class="currency-btn glass" aria-haspopup="listbox" aria-expanded="false">
+          <span data-currency-code>EUR</span>
+          <svg class="chev" width="10" height="10" viewBox="0 0 10 10"><path d="M1 3l4 4 4-4" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        </button>
+        <div class="currency-menu glass" role="listbox"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="checkout-page">
+    <div class="co-head">
+      <div>
+        <a class="back" href="index.html#packs">← Back to packs</a>
+        <h1 class="display" style="margin-top:14px">Secure <em>checkout.</em></h1>
+      </div>
+      <div class="eyebrow"><span class="dot"></span>Pay here · Download instantly</div>
+    </div>
+
+    <div class="co-grid">
+      <!-- Order -->
+      <section class="co-card glass refract">
+        <h2>Your order</h2>
+        <div class="co-preview" data-preview></div>
+        <div class="pack-options" data-options role="radiogroup" aria-label="Choose a pack"></div>
+        <div class="summary">
+          <div class="row"><span data-sum-name>Pack</span><span data-sum-price></span></div>
+          <div class="row" data-sum-save-row hidden><span>Bundle saving</span><span data-sum-save></span></div>
+          <div class="row"><span>Taxes</span><span>Included where applicable</span></div>
+          <div class="row total"><span>Total today</span><span class="amt" data-sum-total></span></div>
+        </div>
+        <div class="steps">
+          <div><span>1</span>Pay securely on this page — card, Apple Pay or Google Pay.</div>
+          <div><span>2</span>Your download opens right after payment.</div>
+          <div><span>3</span>A receipt is sent to your email.</div>
+        </div>
+      </section>
+
+      <!-- Payment: Stripe Embedded Checkout mounts here -->
+      <section class="co-card glass pay-card">
+        <h2>Payment</h2>
+        <div class="stripe-mount" id="stripe-checkout" aria-live="polite">
+          <div class="pay-loading" data-pay-loading>
+            <span class="spinner" aria-hidden="true"></span>
+            <span>Preparing secure payment…</span>
+          </div>
+        </div>
+        <div class="pay-fallback" data-pay-fallback hidden>
+          <p>Secure payment is opening on Stripe's checkout page.</p>
+          <a class="btn btn-violet pay" data-fallback-link href="#">Continue to secure payment · <span data-sum-total></span></a>
+        </div>
+        <div class="secure">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+          Payments are processed by Stripe. We never see your card details.
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div class="toast glass" data-toast role="status"></div>
+
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/currency.js"></script>
+  <script src="assets/js/effects.js"></script>
+  <script src="assets/js/checkout.js"></script>
+</body>
+</html>
