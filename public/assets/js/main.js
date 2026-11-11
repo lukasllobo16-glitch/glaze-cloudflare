@@ -19,7 +19,7 @@
       <div class="body">
         <h3>${p.name}</h3>
         <div class="tag">${p.tagline}</div>
-        <div class="price"><span class="amt" data-price="${key}"></span><small>one-time</small></div>
+        <div class="price"><span class="amt" data-price="${key}"></span><small>pay once</small></div>
         ${key === 'complete' ? '<div><span class="save" data-save></span></div>' : ''}
         <ul>${p.features.map(f => `<li>${f}</li>`).join('')}</ul>
         <a class="btn ${p.featured ? 'btn-violet' : 'btn-primary'}" href="checkout.html?pack=${key}">Get the ${p.name} <span class="arrow">→</span></a>
@@ -30,7 +30,7 @@
   });
   document.addEventListener('glaze:currency', () => {
     const s = C.price('phone') + C.price('desktop') - C.price('complete');
-    $$('[data-save]').forEach(el => (el.textContent = `Save ${C.format(Math.round(s * 100) / 100)} vs. buying separately`));
+    $$('[data-save]').forEach(el => (el.textContent = `You save ${C.format(Math.round(s * 100) / 100)} compared to buying both`));
   });
 
   /* ---------- Gallery ---------- */
@@ -71,53 +71,6 @@
   const closeLb = () => { lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); };
   lb.addEventListener('click', e => { if (e.target === lb || e.target.closest('[data-lb-close]')) closeLb(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
-
-  /* ---------- Hero: 3D stage follows the pointer ---------- */
-  const stage = $('[data-stage]'), inner = $('.stage-inner', stage), hero = $('.hero');
-  if (!FX.reduced) hero.addEventListener('pointermove', e => {
-    const x = e.clientX / innerWidth - .5, y = e.clientY / innerHeight - .5;
-    inner.style.setProperty('--ry', (-6 + x * 14) + 'deg'); inner.style.setProperty('--rx', (8 - y * 10) + 'deg');
-  });
-
-  /* ---------- Hero: liquid glass lens ---------- */
-  const lens = $('.lens', stage);
-  let tx = 0, ty = 0, lx = 0, ly = 0, lastMove = -1e9, stageVisible = true;
-  stage.addEventListener('pointermove', e => {
-    const r = stage.getBoundingClientRect(); tx = e.clientX - r.left - lens.offsetWidth / 2; ty = e.clientY - r.top - lens.offsetHeight / 2; lastMove = performance.now();
-  });
-  new IntersectionObserver(([e]) => (stageVisible = e.isIntersecting)).observe(stage);
-  (function loop(now) {
-    if (stageVisible) {
-      const r = stage.getBoundingClientRect(), s = lens.offsetWidth;
-      if (now - lastMove > 2200) { // drift on its own when the pointer is away (and on phones)
-        const t = now / 1000;
-        tx = (r.width - s) * (0.5 + 0.38 * Math.sin(t * 0.45)); ty = (r.height - s) * (0.45 + 0.3 * Math.sin(t * 0.7 + 1));
-      }
-      lx += (tx - lx) * 0.08; ly += (ty - ly) * 0.08;
-      lens.style.setProperty('--lx', lx + 'px'); lens.style.setProperty('--ly', ly + 'px');
-    }
-    requestAnimationFrame(loop);
-  })(0);
-
-  /* ---------- Hero: screens dissolve into the next painting ---------- */
-  function cycler(screen, list, interval, offset, onShow) {
-    const cur = $('.cur', screen), nxt = $('.nxt', screen), d = new FX.Dissolver($('canvas', screen));
-    let i = Math.max(0, list.findIndex(w => cur.src.endsWith(w.src))), busy = false;
-    async function next() {
-      if (busy || document.hidden || !stageVisible) return; busy = true;
-      i = (i + 1) % list.length; const w = list[i];
-      nxt.src = w.src; try { await nxt.decode(); } catch (e) {}
-      d.fit(); d.drawCover(cur); cur.style.opacity = 0;
-      onShow && onShow(w);
-      await d.play();
-      cur.src = w.src; try { await cur.decode(); } catch (e) {}
-      cur.style.opacity = 1; busy = false;
-    }
-    setTimeout(() => { next(); setInterval(next, interval); }, offset);
-  }
-  const now = $('[data-now]');
-  cycler($('[data-cycle="desktop"]'), G.wallpapers.desktop, 6500, 3200, w => (now.textContent = w.title));
-  cycler($('[data-cycle="phone"]'), G.wallpapers.phone, 6500, 6400);
 
   /* ---------- Manifesto: snap the default wallpaper away ---------- */
   const snap = $('[data-snap]'), snapD = new FX.Dissolver($('canvas', snap));
