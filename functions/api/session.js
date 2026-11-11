@@ -6,15 +6,20 @@
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
 
+// Default links (Dropbox folders, dl=1 = download straight away as one .zip).
+// They are only ever sent to the browser AFTER Stripe confirms the payment.
+// Cloudflare environment variables with the same names override these.
+const LINKS = {
+  DOWNLOAD_PHONE: 'https://www.dropbox.com/scl/fo/yhbb8eom788xudlbt2qhp/ALDCNT4xDsCYuE3kJcmpp2o?rlkey=ckz48t6jau3096l5artptmuwj&dl=1',
+  DOWNLOAD_DESKTOP: 'https://www.dropbox.com/scl/fo/4mjuilvepok9073k462lg/ADgH1PiDyEXgTJvXxJ7tgC8?rlkey=7w0we1jhbyht65p5ds3vukyrh&dl=1',
+  DOWNLOAD_COMPLETE: 'https://www.dropbox.com/scl/fo/8tm4tyrvt4wprme3mzr1h/AC3YnwqGuCDZlynTP_Fpbsc?rlkey=ahb8pmqda064ej52uoird8rt6&dl=1'
+};
+const link = (env, k) => env[k] || LINKS[k];
+
 function downloadsFor(pack, env) {
-  const phone = env.DOWNLOAD_PHONE && { label: 'Phone Pack', url: env.DOWNLOAD_PHONE };
-  const desktop = env.DOWNLOAD_DESKTOP && { label: 'Desktop Pack', url: env.DOWNLOAD_DESKTOP };
-  if (pack === 'phone') return [phone].filter(Boolean);
-  if (pack === 'desktop') return [desktop].filter(Boolean);
-  if (pack === 'complete') {
-    if (env.DOWNLOAD_COMPLETE) return [{ label: 'Complete Collection', url: env.DOWNLOAD_COMPLETE }];
-    return [phone, desktop].filter(Boolean);
-  }
+  if (pack === 'phone') return [{ label: 'Phone Pack', url: link(env, 'DOWNLOAD_PHONE') }];
+  if (pack === 'desktop') return [{ label: 'Desktop Pack', url: link(env, 'DOWNLOAD_DESKTOP') }];
+  if (pack === 'complete') return [{ label: 'Complete Collection', url: link(env, 'DOWNLOAD_COMPLETE') }];
   return [];
 }
 

@@ -564,11 +564,40 @@ footer { border-top: 1px solid var(--line); background: var(--ox-950); padding: 
 /* =========================================================
    Thank you
    ========================================================= */
-.ty { min-height: calc(100vh - 140px); display: grid; place-items: center; padding: 40px 0 80px; }
-.ty-card { width: min(640px, calc(100% - 32px)); text-align: center; display: grid; justify-items: center; gap: 18px; padding: clamp(28px, 5vw, 52px); border-radius: var(--r-lg); background: var(--ox-850); border: 1px solid var(--line); }
-.ty-card .display { font-size: clamp(42px, 6vw, 68px); }
+.ty { padding-top: clamp(32px, 6vw, 72px); padding-bottom: clamp(60px, 8vw, 110px); min-height: calc(100vh - 160px); }
+.ty-check { min-height: 50vh; display: grid; place-content: center; justify-items: center; gap: 16px; color: var(--ivory-dim); }
+.ty-check .spinner, .ty-card .spinner { border-color: rgba(244, 236, 222, .15); border-top-color: var(--gilt); }
+.ty-paid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(32px, 5vw, 72px); align-items: center; }
+.ty-copy { display: grid; gap: 22px; justify-items: start; }
+.ty-copy .display { font-size: clamp(44px, 5.6vw, 82px); }
+.ty-copy .lead b { color: var(--ivory); font-weight: 500; }
+.ty-downloads { display: grid; gap: 10px; width: 100%; max-width: 420px; }
+.ty-dl { --h: 62px; font-size: 17px; gap: 12px; }
+.ty-dl.done { filter: saturate(.85); }
+.ty-file { margin: -8px 0 0; font-size: 13.5px; color: var(--ivory-mute); }
+.ty-small { font-size: 13.5px; color: var(--ivory-mute); margin: 0; }
+.ty-small .link, .ty-copy .link { color: var(--gilt); text-decoration: underline; text-underline-offset: 3px; }
+.ty-stage { position: relative; aspect-ratio: 1 / .78; }
+.ty-stage::before { content: ''; position: absolute; inset: 5%; border-radius: 50%; background: radial-gradient(closest-side, rgba(216, 172, 85, .2), transparent); }
+.ty-stage .dev { position: absolute; }
+.ty-stage[data-pack="complete"] .ty-mac { left: 0; top: 6%; width: 88%; }
+.ty-stage[data-pack="complete"] .ty-phone { right: 0; bottom: 0; width: 25%; }
+.ty-stage[data-pack="desktop"] .ty-mac { left: 2%; top: 12%; width: 96%; }
+.ty-stage[data-pack="phone"] .ty-phone { left: 50%; top: 0; height: 100%; width: auto; aspect-ratio: 1470 / 3000; transform: translateX(-50%); }
+.ty-how { margin-top: clamp(56px, 8vw, 96px); padding-top: clamp(40px, 5vw, 56px); border-top: 1px solid var(--line); display: grid; gap: 26px; }
+.ty-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+.ty-steps > div { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 24px; display: grid; gap: 10px; align-content: start; background: linear-gradient(180deg, rgba(244, 236, 222, .035), transparent); }
+.ty-steps .n { font: 500 12px/1 var(--mono); letter-spacing: .14em; color: var(--gilt); }
+.ty-steps h3 { margin: 10px 0 0; font-family: var(--serif); font-weight: 400; font-size: 28px; line-height: 1.05; }
+.ty-steps p { margin: 0; color: var(--ivory-dim); font-size: 15px; }
+.ty-card { width: min(640px, 100%); margin: 6vh auto 0; text-align: center; display: grid; justify-items: center; gap: 18px; padding: clamp(28px, 5vw, 52px); border-radius: var(--r-lg); background: var(--ox-850); border: 1px solid var(--line); }
+.ty-card .display { font-size: clamp(40px, 6vw, 64px); }
 .ty-card p { margin: 0; color: var(--ivory-dim); }
-.ty-card .spinner { border-color: rgba(244, 236, 222, .15); border-top-color: var(--gilt); }
-.ty-icon { width: 60px; height: 60px; border-radius: 50%; display: grid; place-items: center; background: var(--gilt); color: var(--ox-950); }
-.ty-downloads { display: grid; gap: 10px; width: 100%; max-width: 380px; }
-.ty-small { font-size: 13.5px; color: var(--ivory-mute) !important; }
+@media (max-width: 900px) {
+  .ty-paid { grid-template-columns: 1fr; }
+  .ty-copy { justify-items: center; text-align: center; }
+  .ty-copy .lead { margin: 0 auto; }
+  .ty-downloads { max-width: none; }
+  .ty-stage { order: -1; max-width: 520px; width: 100%; margin: 0 auto; }
+  .ty-stage[data-pack="phone"] { aspect-ratio: 1 / .9; }
+}
