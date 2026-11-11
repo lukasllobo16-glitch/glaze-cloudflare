@@ -195,7 +195,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 /* ---------- Real devices (official bezels) ---------- */
 .dev { position: relative; width: 100%; }
 .dev-frame { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; user-select: none; -webkit-user-drag: none; }
-.dev-screen { position: absolute; overflow: hidden; background: #000; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; container-type: inline-size; }
+.dev-screen { position: absolute; overflow: hidden; background: transparent; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; container-type: inline-size; }
 .dev-wall { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: opacity .8s ease; }
 .dev-wall.out { opacity: 0; }
 .dev-iphone { filter: drop-shadow(0 30px 40px rgba(0, 0, 0, .55)); }
