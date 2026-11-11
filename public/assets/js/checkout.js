@@ -47,7 +47,7 @@
     const saveRow = $('[data-sum-save-row]');
     if (pack === 'complete') {
       const s = Math.round((C.price('phone') + C.price('desktop') - C.price('complete')) * 100) / 100;
-      $('[data-sum-save]').textContent = '−' + C.format(s); saveRow.hidden = false;
+      $('[data-sum-save]').textContent = C.format(s); saveRow.hidden = false;
     } else saveRow.hidden = true;
   }
 
