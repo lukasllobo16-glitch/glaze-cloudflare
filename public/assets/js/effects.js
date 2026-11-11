@@ -10,21 +10,6 @@
   const isChromium = !!(navigator.userAgentData && navigator.userAgentData.brands.some(b => /Chromium/.test(b.brand)));
   if (isChromium) document.documentElement.classList.add('lg-refract');
 
-  /* ---------- Liquid glass lens displacement map ---------- */
-  function buildLensMap(size) {
-    const c = document.createElement('canvas'); c.width = c.height = size;
-    const ctx = c.getContext('2d'); const img = ctx.createImageData(size, size); const r = size / 2;
-    for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
-      const dx = (x - r) / r, dy = (y - r) / r, d = Math.sqrt(dx * dx + dy * dy);
-      const i = (y * size + x) * 4;
-      // strongest bending near the rim, like a thick glass bead
-      const k = d < 1 ? Math.pow(d, 3) : 0;
-      img.data[i] = 128 - dx * k * 127; img.data[i + 1] = 128 - dy * k * 127; img.data[i + 2] = 128; img.data[i + 3] = 255;
-    }
-    ctx.putImageData(img, 0, 0); return c.toDataURL();
-  }
-  const lensMap = document.getElementById('lg-lens-map');
-  if (lensMap) lensMap.setAttribute('href', buildLensMap(170));
 
   /* ---------- Rim light follows the pointer on glass ---------- */
   document.addEventListener('pointermove', e => {
