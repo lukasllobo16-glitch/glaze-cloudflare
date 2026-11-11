@@ -34,7 +34,12 @@
   function select(k) {
     pack = k;
     $$('[data-opt]').forEach(o => { const on = o.dataset.opt === k; o.classList.toggle('sel', on); $('input', o).checked = on; });
-    preview.innerHTML = LAYOUT[k].map(([n, s]) => `<img src="assets/img/w/${n}-s.webp" alt="" style="${s}">`).join('');
+    const DV = window.GlazeDevices, w = id => `assets/img/w/${id}-s.webp`;
+    if (DV) {
+      preview.replaceChildren(); preview.dataset.pack = k;
+      if (k !== 'phone') { const m = DV.make('air', 'starlight', w(k === 'desktop' ? 'd3' : 'd4')); m.classList.add('c-mac'); preview.appendChild(m); }
+      if (k !== 'desktop') { const p = DV.make('iphone', 'burgundy', w(k === 'phone' ? 'p1' : 'p2'), { lock: true }); p.classList.add('c-phone'); preview.appendChild(p); }
+    } else preview.innerHTML = LAYOUT[k].map(([n, s]) => `<img src="${w(n)}" alt="" style="${s}">`).join('');
     try { history.replaceState(null, '', `?pack=${k}`); } catch (e) {}
     updateSummary();
     scheduleMount();

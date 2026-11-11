@@ -29,6 +29,7 @@ export async function onRequestPost({ request, env }) {
   const site = env.SITE_URL || new URL(request.url).origin;
   const p = new URLSearchParams();
   p.append('ui_mode', 'embedded');
+  p.append('locale', 'en');
   p.append('mode', 'payment');
   p.append('return_url', `${site}/thank-you.html?session_id={CHECKOUT_SESSION_ID}`);
   p.append('line_items[0][quantity]', '1');
