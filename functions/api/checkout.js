@@ -9,9 +9,9 @@ const PRICES = {
   complete: { EUR: 20.99, USD: 24.99, GBP: 17.99, CHF: 19.90, CAD: 32.99, AUD: 36.99, BRL: 124.90, MXN: 449, JPY: 3700, SEK: 229, NOK: 249, DKK: 159, PLN: 88.99, INR: 2099, ZAR: 419, AED: 89.99 }
 };
 const PRODUCTS = {
-  phone:    { name: 'Glaze — Phone Pack',          description: 'Every painting, cut for your phone. Instant download.' },
-  desktop:  { name: 'Glaze — Desktop Pack',        description: 'Gallery light for your laptop and monitor. Instant download.' },
-  complete: { name: 'Glaze — Complete Collection', description: 'Phone + Desktop. Every screen you own. Instant download.' }
+  phone:    { name: 'Glaze Phone Pack',           description: 'Every painting, made for your phone. Instant download.' },
+  desktop:  { name: 'Glaze Desktop Pack',         description: 'Turn your laptop into a gallery wall. Instant download.' },
+  complete: { name: 'Glaze Complete Collection', description: 'Phone and desktop. Every screen covered. Instant download.' }
 };
 const ZERO_DECIMAL = ['JPY'];
 
@@ -39,7 +39,7 @@ export async function onRequestPost({ request, env }) {
   p.append('metadata[pack]', pack);
   p.append('payment_intent_data[metadata][pack]', pack);
   p.append('custom_text[submit][message]',
-    'Digital download: you get instant access after payment. By paying you agree that the 14-day right of withdrawal ends once the download is available.');
+    'Digital download with instant access. By paying, you agree that your right of withdrawal ends once the files are available to you.');
   if (env.STRIPE_AUTOMATIC_TAX === 'true') { // turn on after activating Stripe Tax
     p.append('automatic_tax[enabled]', 'true');
     p.append('line_items[0][price_data][tax_behavior]', 'inclusive');
