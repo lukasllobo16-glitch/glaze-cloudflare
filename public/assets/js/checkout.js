@@ -1,7 +1,7 @@
 /* =========================================================
    GLAZE — checkout page
    Stripe Embedded Checkout: the Stripe payment form is shown INSIDE
-   this page. Our server (/api/checkout, a Netlify Function) creates the
+   this page. Our server (/api/checkout, a Cloudflare Pages Function) creates the
    session with the right pack, price and currency.
    If the server is not reachable (e.g. local preview), the page falls
    back to the Stripe Payment Link for that pack.
@@ -34,7 +34,7 @@
   function select(k) {
     pack = k;
     $$('[data-opt]').forEach(o => { const on = o.dataset.opt === k; o.classList.toggle('sel', on); $('input', o).checked = on; });
-    preview.innerHTML = LAYOUT[k].map(([n, s]) => `<img src="assets/img/${n}.jpg" alt="" style="${s}">`).join('');
+    preview.innerHTML = LAYOUT[k].map(([n, s]) => `<img src="assets/img/w/${n}-s.webp" alt="" style="${s}">`).join('');
     try { history.replaceState(null, '', `?pack=${k}`); } catch (e) {}
     updateSummary();
     scheduleMount();

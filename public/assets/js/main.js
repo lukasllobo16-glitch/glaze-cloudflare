@@ -4,116 +4,224 @@
 (function () {
   const G = window.GLAZE, C = window.GlazeCurrency, FX = window.GlazeFX;
   const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const KIND_LABEL = { desktop: 'Desktop', phone: 'Phone' };
 
-  /* ---------- Packs ---------- */
-  const packsEl = $('[data-packs]');
-  ['phone', 'desktop', 'complete'].forEach((key, i) => {
-    const p = G.packs[key];
-    const covers = p.cover.map(src => `<img class="${/\/p\d/.test(src) ? 'c-phone' : 'c-desk'}" src="${src}" alt="" loading="lazy">`).join('');
-    const el = document.createElement('article');
-    el.className = 'pack glass refract reveal' + (p.featured ? ' featured' : '');
-    el.dataset.pack = key; el.style.setProperty('--d', i * 0.1 + 's');
-    el.innerHTML = `
-      ${p.featured ? '<span class="badge glass">Best value</span>' : ''}
-      <div class="cover">${covers}</div>
-      <div class="body">
-        <h3>${p.name}</h3>
-        <div class="tag">${p.tagline}</div>
-        <div class="price"><span class="amt" data-price="${key}"></span><small>pay once</small></div>
-        ${key === 'complete' ? '<div><span class="save" data-save></span></div>' : ''}
-        <ul>${p.features.map(f => `<li>${f}</li>`).join('')}</ul>
-        <a class="btn ${p.featured ? 'btn-violet' : 'btn-primary'}" href="checkout.html?pack=${key}">Get the ${p.name} <span class="arrow">→</span></a>
-        <div class="fine">Instant download · No subscription</div>
-      </div>`;
-    packsEl.appendChild(el);
-    FX.tilt(el, 4);
-  });
-  document.addEventListener('glaze:currency', () => {
-    const s = C.price('phone') + C.price('desktop') - C.price('complete');
-    $$('[data-save]').forEach(el => (el.textContent = `You save ${C.format(Math.round(s * 100) / 100)} compared to buying both`));
-  });
+  /* ---------- Hero: slow crossfade between paintings ---------- */
+  const heroSets = {
+    desktop: ['d2', 'd4', 'd6', 'd3'],
+    phone: ['p1', 'p3', 'p6', 'p2']
+  };
+  const titleOf = id => (G.wallpapers[id[0] === 'd' ? 'desktop' : 'phone'].find(w => w.id === id) || {}).title || '';
+  if (!FX.reduced) {
+    let i = 0;
+    const swap = (screen, id) => {
+      const old = $('img', screen), img = new Image();
+      img.alt = old.alt; img.width = old.width; img.height = old.height; img.className = 'out';
+      img.src = `assets/img/w/${id}.webp`;
+      img.decode().then(() => {
+        screen.appendChild(img);
+        requestAnimationFrame(() => requestAnimationFrame(() => { img.classList.remove('out'); old.classList.add('out'); }));
+        setTimeout(() => old.remove(), 1500);
+      }).catch(() => {});
+    };
+    setInterval(() => {
+      if (document.hidden) return;
+      i = (i + 1) % heroSets.desktop.length;
+      swap($('[data-cycle="desktop"]'), heroSets.desktop[i]);
+      swap($('[data-cycle="phone"]'), heroSets.phone[i]);
+      $('[data-now]').textContent = titleOf(heroSets.desktop[i]);
+    }, 5200);
+  }
+
+  /* ---------- Before / after ---------- */
+  const cmp = $('[data-compare]');
+  if (cmp) {
+    const range = $('input', cmp), screen = $('.screen', cmp);
+    const set = v => screen.style.setProperty('--pos', v + '%');
+    range.addEventListener('input', () => set(range.value));
+    set(range.value);
+    // Gentle hint the first time it comes into view
+    if (!FX.reduced) {
+      const hio = new IntersectionObserver(([e]) => {
+        if (!e.isIntersecting) return; hio.disconnect();
+        let t0 = null; const from = 50;
+        const step = ts => {
+          if (t0 === null) t0 = ts; const k = Math.min(1, (ts - t0) / 1600);
+          const v = from + Math.sin(k * Math.PI * 2) * 22 * (1 - k);
+          range.value = v; set(v); if (k < 1) requestAnimationFrame(step);
+        };
+        setTimeout(() => requestAnimationFrame(step), 500);
+      }, { threshold: 0.6 });
+      hio.observe(cmp);
+    }
+  }
 
   /* ---------- Gallery ---------- */
-  ['desktop', 'phone'].forEach(kind => {
-    const grid = $(`[data-grid="${kind}"]`);
-    G.wallpapers[kind].forEach((w, i) => {
-      const card = document.createElement('button');
-      card.className = 'card reveal'; card.style.setProperty('--d', (i % 3) * 0.08 + 's');
-      card.setAttribute('aria-label', `Preview ${w.title}`);
-      card.innerHTML = `<img src="${w.src}" alt="${w.title}" loading="lazy"><div class="wm"></div><div class="glare"></div>
-        <div class="meta glass"><b>${w.title}</b><small>${kind}</small></div>`;
-      card.addEventListener('click', () => openLightbox(kind, w));
-      grid.appendChild(card); FX.tilt(card, 6);
-    });
+  const order = [];
+  const D = G.wallpapers.desktop, P = G.wallpapers.phone;
+  // Bento blocks: two desktops stacked next to two phones, alternating sides.
+  // Leftover desktops become one large feature tile next to the "more" tile.
+  const dq = D.map(w => ({ kind: 'desktop', ...w })), pq = P.map(w => ({ kind: 'phone', ...w }));
+  for (let b = 0; dq.length >= 2 && pq.length >= 2; b++) {
+    const [d1, d2, p1, p2] = [dq.shift(), dq.shift(), pq.shift(), pq.shift()];
+    order.push(...(b % 2 ? [p1, p2, d1, d2] : [d1, p1, p2, d2]));
+  }
+  dq.forEach(w => order.push({ ...w, wide: true }));
+  pq.forEach(w => order.push(w));
+  const gallery = $('[data-gallery]');
+  order.forEach((w, idx) => {
+    const card = document.createElement('button');
+    card.className = 'card reveal' + (w.wide ? ' wide' : ''); card.dataset.kind = w.kind;
+    card.style.setProperty('--d', (idx % 3) * 0.06 + 's');
+    card.setAttribute('aria-label', `Preview ${w.title}, ${KIND_LABEL[w.kind]} wallpaper`);
+    const [wd, ht] = w.kind === 'desktop' ? [800, 450] : [420, 908];
+    card.innerHTML = `<img src="${w.thumb}" alt="${w.title}" loading="lazy" decoding="async" width="${wd}" height="${ht}">
+      <div class="wm"></div><span class="tag">${KIND_LABEL[w.kind]}</span>
+      <div class="cap"><b>${w.title}</b><span>Preview on ${w.kind === 'desktop' ? 'laptop' : 'phone'} →</span></div>`;
+    card.addEventListener('click', () => openLightbox(w));
+    gallery.appendChild(card);
   });
-  $$('[data-tab]').forEach(tab => tab.addEventListener('click', () => {
-    $$('[data-tab]').forEach(t => t.setAttribute('aria-selected', t === tab));
-    $$('[data-grid]').forEach(g => {
-      g.hidden = g.dataset.grid !== tab.dataset.tab;
-      if (!g.hidden) $$('.reveal', g).forEach(el => el.classList.add('in'));
-    });
+  const more = document.createElement('a');
+  more.className = 'more-tile reveal'; more.href = '#packs';
+  more.innerHTML = '<b>And many more inside every pack.</b><span>See the packs →</span>';
+  gallery.appendChild(more);
+  $$('[data-filter]').forEach(btn => btn.addEventListener('click', () => {
+    $$('[data-filter]').forEach(b => b.setAttribute('aria-selected', b === btn));
+    const f = btn.dataset.filter;
+    $$('.card', gallery).forEach(c => { c.hidden = f !== 'all' && c.dataset.kind !== f; c.classList.add('in'); });
+    more.hidden = f === 'desktop';
   }));
 
-  /* ---------- Lightbox: preview a wallpaper on a device ---------- */
+  /* ---------- Lightbox ---------- */
   const lb = $('[data-lightbox]');
-  function openLightbox(kind, w) {
-    const dev = kind === 'desktop'
-      ? `<div class="laptop"><div class="lid"><div class="screen"><img class="cur" src="${w.src}" alt=""><div class="screen-glare"></div></div></div><div class="base"></div></div>`
-      : `<div class="phone"><div class="island"></div><div class="screen"><img class="cur" src="${w.src}" alt=""><div class="screen-glare"></div></div></div>`;
-    $('[data-lb-device]').innerHTML = dev;
-    $('[data-lb-kind]').innerHTML = `<span class="dot"></span>${kind === 'desktop' ? 'Desktop wallpaper' : 'Phone wallpaper'}`;
+  let current = null, lastFocus = null;
+  const visible = () => order.filter(w => { const f = $('[data-filter][aria-selected="true"]').dataset.filter; return f === 'all' || w.kind === f; });
+  function openLightbox(w) {
+    current = w; lastFocus = lastFocus || document.activeElement;
+    $('[data-lb-device]').innerHTML = w.kind === 'desktop'
+      ? `<div class="laptop"><div class="lid"><div class="screen"><img src="${w.src}" alt="${w.title} on a laptop"></div></div><div class="base"></div></div>`
+      : `<div class="phone"><div class="island"></div><div class="screen"><img src="${w.src}" alt="${w.title} on a phone"></div></div>`;
+    const pack = w.kind;
+    $('[data-lb-kind]').textContent = `${KIND_LABEL[w.kind]} wallpaper`;
     $('[data-lb-title]').textContent = w.title;
-    const pack = kind === 'desktop' ? 'desktop' : 'phone';
-    $('[data-lb-text]').innerHTML = `Included in the ${G.packs[pack].name} (<b>${C.format(C.price(pack))}</b>) and the Complete Collection (<b>${C.format(C.price('complete'))}</b>).`;
-    const cta = $('[data-lb-cta]'); cta.href = `checkout.html?pack=${pack}`; cta.textContent = `Get the ${G.packs[pack].name}`;
-    lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false');
-  }
-  const closeLb = () => { lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true'); };
-  lb.addEventListener('click', e => { if (e.target === lb || e.target.closest('[data-lb-close]')) closeLb(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
-
-  /* ---------- Manifesto: snap the default wallpaper away ---------- */
-  const snap = $('[data-snap]'), snapD = new FX.Dissolver($('canvas', snap));
-  function paintDefault() {
-    snapD.fit(); const { ctx, w, h } = snapD;
-    const g = ctx.createLinearGradient(0, 0, w, h); g.addColorStop(0, '#0b3a8f'); g.addColorStop(.55, '#2f8cf0'); g.addColorStop(1, '#9fd3ff');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
-    for (let k = 0; k < 4; k++) {
-      ctx.beginPath(); ctx.moveTo(0, h * (.55 + k * .1));
-      ctx.bezierCurveTo(w * .3, h * (.3 + k * .12), w * .6, h * (.85 + k * .03), w, h * (.45 + k * .12));
-      ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath(); ctx.fillStyle = `rgba(255,255,255,${0.06 + k * 0.03})`; ctx.fill();
+    $('[data-lb-text]').innerHTML = `Included in the ${G.packs[pack].name} for <b>${C.format(C.price(pack))}</b>, and in the Complete Collection for <b>${C.format(C.price('complete'))}</b>.`;
+    const cta = $('[data-lb-cta]'); cta.href = `checkout.html?pack=${pack}`; cta.innerHTML = `Get the ${G.packs[pack].name} <span class="arrow">→</span>`;
+    if (!lb.classList.contains('open')) {
+      lb.classList.add('open'); lb.setAttribute('aria-hidden', 'false');
+      document.documentElement.style.overflow = 'hidden';
+      setTimeout(() => $('[data-lb-close]').focus(), 50);
     }
-    ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.font = `600 ${Math.round(w / 34)}px ui-monospace, Menlo, monospace`;
-    ctx.fillText('default_wallpaper_01.jpg', w * 0.05, h * 0.12);
-    ctx.font = `500 ${Math.round(w / 9)}px -apple-system, Helvetica, Arial`; ctx.fillStyle = 'rgba(255,255,255,.9)';
-    const d = new Date(); ctx.fillText(d.toTimeString().slice(0, 5), w * 0.05, h * 0.36);
   }
-  let snapping = false;
-  async function doSnap() { if (snapping) return; snapping = true; paintDefault(); await new Promise(r => setTimeout(r, 650)); await snapD.play(); snapping = false; }
-  paintDefault();
-  const sio = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setTimeout(doSnap, 500); sio.disconnect(); } }, { threshold: 0.6 });
-  sio.observe(snap);
-  $('[data-snap-btn]').addEventListener('click', doSnap);
-  addEventListener('resize', () => { if (!snapping) { snapD.fit(); } });
+  function closeLb() {
+    if (!lb.classList.contains('open')) return;
+    lb.classList.remove('open'); lb.setAttribute('aria-hidden', 'true');
+    document.documentElement.style.overflow = '';
+    if (lastFocus) lastFocus.focus({ preventScroll: true }); lastFocus = null;
+  }
+  function stepLb(dir) {
+    const list = visible(); const i = list.findIndex(w => w === current);
+    openLightbox(list[(i + dir + list.length) % list.length]);
+  }
+  lb.addEventListener('click', e => { if (e.target === lb || e.target.closest('[data-lb-close]')) closeLb(); });
+  $('[data-lb-prev]').addEventListener('click', () => stepLb(-1));
+  $('[data-lb-next]').addEventListener('click', () => stepLb(1));
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') closeLb();
+    if (e.key === 'ArrowRight') stepLb(1);
+    if (e.key === 'ArrowLeft') stepLb(-1);
+  });
 
-  /* ---------- Manifesto words light up while scrolling ---------- */
+  /* ---------- Lock screen demo ---------- */
+  const lockImg = $('[data-lock-img]'), lockList = $('[data-lock-list]');
+  P.forEach((w, i) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<button aria-pressed="${i === 0}"><img src="${w.thumb}" alt="" loading="lazy" width="420" height="908"><span><b>${w.title}</b><small>Phone wallpaper</small></span></button>`;
+    $('button', li).addEventListener('click', () => {
+      $$('button', lockList).forEach(b => b.setAttribute('aria-pressed', b === $('button', li)));
+      lockImg.src = w.src; lockImg.alt = `${w.title} on a phone lock screen`;
+    });
+    lockList.appendChild(li);
+  });
+  lockImg.alt = `${P[0].title} on a phone lock screen`;
+  function tickClock() {
+    const d = new Date();
+    $('[data-lock-time]').textContent = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(/\s?[AP]M$/i, '');
+    $('[data-lock-date]').textContent = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+  tickClock(); setInterval(tickClock, 15000);
+
+  /* ---------- Manifesto: words light up as you scroll ---------- */
   const words = $('[data-words]');
-  words.innerHTML = words.textContent.split(' ').map(w => `<span class="w">${w}</span>`).join(' ');
+  words.innerHTML = [...words.childNodes].flatMap(n => {
+    const em = n.nodeType === 1;
+    return n.textContent.split(/\s+/).filter(Boolean).map(t => `<span class="w${em ? ' em' : ''}">${t}</span>`);
+  }).join(' ');
   const ws = $$('.w', words);
   function lightWords() {
     const r = words.getBoundingClientRect();
-    const p = Math.min(1, Math.max(0, (innerHeight * 0.85 - r.top) / (r.height + innerHeight * 0.35)));
+    const p = Math.min(1, Math.max(0, (innerHeight * 0.8 - r.top) / (r.height + innerHeight * 0.25)));
     const n = Math.round(p * ws.length); ws.forEach((w, i) => w.classList.toggle('on', i < n));
   }
+  if (FX.reduced) ws.forEach(w => w.classList.add('on'));
 
-  /* ---------- Sticky purchase bar ---------- */
-  const sticky = $('[data-sticky]'), packsSec = $('#packs'); let packsVisible = false;
-  new IntersectionObserver(([e]) => (packsVisible = e.isIntersecting), { threshold: 0.15 }).observe(packsSec);
-  function onScroll() {
-    sticky.classList.toggle('show', scrollY > innerHeight * 0.9 && !packsVisible && innerHeight + scrollY < document.body.scrollHeight - 200);
-    lightWords();
-  }
-  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  /* ---------- Packs ---------- */
+  const packsEl = $('[data-packs]');
+  const COVER = {
+    phone:    ['left:13%;top:22%;width:23%;aspect-ratio:9/19.5;transform:rotate(-8deg)', 'left:39%;top:12%;width:23%;aspect-ratio:9/19.5;z-index:2', 'left:65%;top:22%;width:23%;aspect-ratio:9/19.5;transform:rotate(8deg)'],
+    desktop:  ['left:4%;top:16%;width:60%;aspect-ratio:16/9;transform:rotate(-5deg)', 'left:20%;top:40%;width:60%;aspect-ratio:16/9;z-index:2', 'left:37%;top:10%;width:58%;aspect-ratio:16/9;transform:rotate(5deg)'],
+    complete: ['left:4%;top:16%;width:62%;aspect-ratio:16/9;transform:rotate(-4deg)', 'left:66%;top:9%;width:24%;aspect-ratio:9/19.5;z-index:2;transform:rotate(6deg)', 'left:14%;top:48%;width:52%;aspect-ratio:16/9;transform:rotate(3deg)']
+  };
+  ['phone', 'desktop', 'complete'].forEach((key, i) => {
+    const p = G.packs[key];
+    const el = document.createElement('article');
+    el.className = 'pack reveal' + (p.featured ? ' featured' : '');
+    el.style.setProperty('--d', i * 0.08 + 's');
+    el.innerHTML = `
+      ${p.featured ? '<span class="badge">Best value</span>' : ''}
+      <div class="cover" aria-hidden="true">${p.cover.map((src, j) => `<img src="${src}" alt="" loading="lazy" style="${COVER[key][j]}">`).join('')}</div>
+      <div class="body">
+        <h3>${p.name}</h3>
+        <div class="tagline">${p.tagline}</div>
+        <div class="price"><span class="amt" data-price="${key}"></span><small>one payment</small></div>
+        <div class="was" ${key === 'complete' ? 'data-save' : ''}>${key === 'complete' ? '' : '&nbsp;'}</div>
+        <ul>${p.features.map(f => `<li>${f}</li>`).join('')}</ul>
+        <a class="btn ${p.featured ? 'btn-gilt' : 'btn-ghost'} btn-block" href="checkout.html?pack=${key}">Get the ${p.name} <span class="arrow">→</span></a>
+        <div class="fine">Instant download · No subscription</div>
+      </div>`;
+    packsEl.appendChild(el);
+  });
+  document.addEventListener('glaze:currency', () => {
+    const s = Math.round((C.price('phone') + C.price('desktop') - C.price('complete')) * 100) / 100;
+    $$('[data-save]').forEach(el => (el.textContent = `Save ${C.format(s)} compared with buying both`));
+    if (current && lb.classList.contains('open')) openLightbox(current);
+  });
+
+  /* ---------- Final fan of phone paintings ---------- */
+  const fan = $('[data-fan]');
+  const fanIds = ['p4', 'p2', 'p1', 'p6', 'p5'];
+  fan.innerHTML = fanIds.map((id, i) => {
+    const a = (i - 2) * 11, x = (i - 2) * 64;
+    return `<img src="assets/img/w/${id}-s.webp" alt="" loading="lazy" style="transform:translateX(calc(-50% + ${x}%)) rotate(${a}deg);z-index:${3 - Math.abs(i - 2)}">`;
+  }).join('');
+
+  /* ---------- Sticky buy bar ---------- */
+  const sticky = $('[data-sticky]'), hero = $('.hero'), packsSec = $('#packs'), foot = $('footer');
+  const seen = { hero: true, packs: false, foot: false };
+  const sio = new IntersectionObserver(es => es.forEach(e => {
+    if (e.target === hero) seen.hero = e.isIntersecting;
+    if (e.target === packsSec) seen.packs = e.isIntersecting;
+    if (e.target === foot) seen.foot = e.isIntersecting;
+    sticky.classList.toggle('show', !seen.hero && !seen.packs && !seen.foot);
+  }), { threshold: 0 });
+  [hero, packsSec, foot].forEach(el => sio.observe(el));
+
+  let ticking = false;
+  addEventListener('scroll', () => {
+    if (ticking) return; ticking = true;
+    requestAnimationFrame(() => { lightWords(); ticking = false; });
+  }, { passive: true });
+  lightWords();
 
   FX.initCurrency();
   FX.reveal();

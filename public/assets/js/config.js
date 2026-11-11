@@ -42,7 +42,7 @@ window.GLAZE = {
         'Looks great on lock and home screen',
         'Download right after you pay'
       ],
-      cover: ['assets/img/p1.jpg', 'assets/img/p3.jpg', 'assets/img/p6.jpg']
+      cover: ['assets/img/w/p1-s.webp', 'assets/img/w/p3-s.webp', 'assets/img/w/p6-s.webp']
     },
     desktop: {
       name: 'Desktop Pack',
@@ -54,7 +54,7 @@ window.GLAZE = {
         'Fits laptops, monitors and tablets',
         'Download right after you pay'
       ],
-      cover: ['assets/img/d2.jpg', 'assets/img/d6.jpg', 'assets/img/d3.jpg']
+      cover: ['assets/img/w/d2-s.webp', 'assets/img/w/d6-s.webp', 'assets/img/w/d3-s.webp']
     },
     complete: {
       name: 'Complete Collection',
@@ -67,27 +67,27 @@ window.GLAZE = {
         'The same look on every screen you own',
         'Download right after you pay'
       ],
-      cover: ['assets/img/d4.jpg', 'assets/img/p2.jpg', 'assets/img/d7.jpg']
+      cover: ['assets/img/w/d4-s.webp', 'assets/img/w/p2-s.webp', 'assets/img/w/d7-s.webp']
     }
   },
 
   wallpapers: {
     desktop: [
-      { src: 'assets/img/d1.jpg', title: 'Off the Clock' },
-      { src: 'assets/img/d2.jpg', title: 'Starry Datejust' },
-      { src: 'assets/img/d3.jpg', title: 'Midnight Polo' },
-      { src: 'assets/img/d4.jpg', title: 'The World Is Yours' },
-      { src: 'assets/img/d5.jpg', title: 'Prancing' },
-      { src: 'assets/img/d6.jpg', title: 'Alpine Wall' },
-      { src: 'assets/img/d7.jpg', title: 'Cigar & Sea' }
+      { id: 'd1', src: 'assets/img/w/d1.webp', thumb: 'assets/img/w/d1-s.webp', title: 'Off the Clock' },
+      { id: 'd2', src: 'assets/img/w/d2.webp', thumb: 'assets/img/w/d2-s.webp', title: 'Starry Datejust' },
+      { id: 'd3', src: 'assets/img/w/d3.webp', thumb: 'assets/img/w/d3-s.webp', title: 'Midnight Polo' },
+      { id: 'd4', src: 'assets/img/w/d4.webp', thumb: 'assets/img/w/d4-s.webp', title: 'The World Is Yours' },
+      { id: 'd5', src: 'assets/img/w/d5.webp', thumb: 'assets/img/w/d5-s.webp', title: 'Prancing' },
+      { id: 'd6', src: 'assets/img/w/d6.webp', thumb: 'assets/img/w/d6-s.webp', title: 'Alpine Wall' },
+      { id: 'd7', src: 'assets/img/w/d7.webp', thumb: 'assets/img/w/d7-s.webp', title: 'Cigar & Sea' }
     ],
     phone: [
-      { src: 'assets/img/p1.jpg', title: 'The World Is Yours' },
-      { src: 'assets/img/p2.jpg', title: 'Money Talks' },
-      { src: 'assets/img/p3.jpg', title: 'Green on Green' },
-      { src: 'assets/img/p4.jpg', title: 'Silence the Crowd' },
-      { src: 'assets/img/p5.jpg', title: 'No Risk, No Story' },
-      { src: 'assets/img/p6.jpg', title: 'The Resting King' }
+      { id: 'p1', src: 'assets/img/w/p1.webp', thumb: 'assets/img/w/p1-s.webp', title: 'The World Is Yours' },
+      { id: 'p2', src: 'assets/img/w/p2.webp', thumb: 'assets/img/w/p2-s.webp', title: 'Money Talks' },
+      { id: 'p3', src: 'assets/img/w/p3.webp', thumb: 'assets/img/w/p3-s.webp', title: 'Green on Green' },
+      { id: 'p4', src: 'assets/img/w/p4.webp', thumb: 'assets/img/w/p4-s.webp', title: 'Silence the Crowd' },
+      { id: 'p5', src: 'assets/img/w/p5.webp', thumb: 'assets/img/w/p5-s.webp', title: 'No Risk, No Story' },
+      { id: 'p6', src: 'assets/img/w/p6.webp', thumb: 'assets/img/w/p6-s.webp', title: 'The Resting King' }
     ]
   }
 };

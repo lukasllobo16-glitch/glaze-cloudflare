@@ -5,33 +5,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Thank you | Glaze</title>
   <meta name="robots" content="noindex">
-  <meta name="theme-color" content="#050505">
+  <meta name="theme-color" content="#220a0d">
   <link rel="icon" href="assets/img/logo-mark.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preload" href="assets/fonts/instrument-serif-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/geist-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-  <div class="aura" aria-hidden="true"><i></i><i></i><i></i></div>
-  <div class="grain" aria-hidden="true"></div>
 
-  <header class="nav glass">
-    <a class="logo" href="index.html" aria-label="Glaze home"><img data-logo src="assets/img/logo-wordmark.png" alt="glaze"></a>
-    <div class="nav-right"><a class="btn btn-glass glass" href="index.html#gallery">Gallery</a></div>
+  <header class="nav" data-nav>
+    <div class="wrap">
+    <a class="logo" href="index.html" aria-label="Glaze home"><img src="assets/img/logo-wordmark-light.png" alt="glaze" width="160" height="51"></a>
+    <div class="nav-right"><a class="btn btn-ghost btn-sm" href="index.html#gallery">Gallery</a></div>
+    </div>
   </header>
 
   <main class="ty">
     <!-- Checking -->
-    <section class="ty-card glass" data-state="loading">
+    <section class="ty-card" data-state="loading">
       <span class="spinner" aria-hidden="true"></span>
       <p>Confirming your payment…</p>
     </section>
 
     <!-- Paid -->
-    <section class="ty-card glass" data-state="paid" hidden>
+    <section class="ty-card" data-state="paid" hidden>
       <div class="ty-icon"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12l5 5 9-10"/></svg></div>
-      <div class="eyebrow"><span class="dot"></span><span data-pack-name>Your pack</span></div>
+      <span class="kicker" data-pack-name>Your pack</span>
       <h1 class="display">Your screen, <em>glazed.</em></h1>
       <p>Thank you for your purchase. Your wallpapers are ready to download. A receipt has been sent to <b data-email>your email</b>.</p>
       <div class="ty-downloads" data-downloads></div>
@@ -40,17 +39,17 @@
     </section>
 
     <!-- Not completed -->
-    <section class="ty-card glass" data-state="open" hidden>
+    <section class="ty-card" data-state="open" hidden>
       <h1 class="display">Payment <em>not finished.</em></h1>
       <p>Your payment wasn't completed, so nothing was charged. You can try again whenever you like.</p>
-      <a class="btn btn-violet" href="checkout.html" data-retry>Back to checkout</a>
+      <a class="btn btn-gilt" href="checkout.html" data-retry>Back to checkout</a>
     </section>
 
     <!-- Error -->
-    <section class="ty-card glass" data-state="error" hidden>
+    <section class="ty-card" data-state="error" hidden>
       <h1 class="display">We couldn't <em>check that.</em></h1>
       <p>We couldn't confirm this payment right now. If you were charged, your receipt email has the details. Send it to <span data-support-text></span> and we'll get your files to you.</p>
-      <a class="btn btn-primary" href="index.html">Back to Glaze</a>
+      <a class="btn btn-ghost" href="index.html">Back to Glaze</a>
     </section>
   </main>
 
@@ -76,7 +75,7 @@
         const box = document.querySelector('[data-downloads]');
         (d.downloads || []).forEach(dl => {
           const a = document.createElement('a');
-          a.className = 'btn btn-violet'; a.href = dl.url; a.target = '_blank'; a.rel = 'noopener';
+          a.className = 'btn btn-gilt'; a.href = dl.url; a.target = '_blank'; a.rel = 'noopener';
           a.innerHTML = 'Download ' + dl.label + ' <span class="arrow">→</span>';
           box.appendChild(a);
         });
