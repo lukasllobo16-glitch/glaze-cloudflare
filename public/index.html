@@ -101,12 +101,15 @@
         <div class="section-head center">
           <span class="kicker reveal">Try it on</span>
           <h2 class="h2 reveal">See it on <em>your</em> screen.</h2>
-          <p class="lead reveal">Pick your device, your color and a painting. Drag the device to tilt it.</p>
+          <p class="lead reveal">Swipe through the paintings like you would on your own lock screen.</p>
         </div>
         <div class="try-grid">
           <div class="try-stage" data-try-stage>
-            <div class="try-tilt" data-try-tilt></div>
-            <span class="try-hint" data-try-hint><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg>Drag to tilt</span>
+            <button class="try-arrow prev" data-try-prev aria-label="Previous wallpaper">←</button>
+            <div class="try-device" data-try-device-wrap></div>
+            <button class="try-arrow next" data-try-next aria-label="Next wallpaper">→</button>
+            <div class="try-dots" data-try-dots aria-hidden="true"></div>
+            <p class="try-swipe"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 7l-5 5 5 5M16 7l5 5-5 5"/></svg>Swipe the screen</p>
           </div>
           <div class="try-panel">
             <div class="seg" role="tablist" aria-label="Device">
@@ -114,13 +117,13 @@
               <button role="tab" aria-selected="false" data-try-device="air">MacBook Air</button>
               <button role="tab" aria-selected="false" data-try-device="pro">MacBook Pro</button>
             </div>
-            <div class="try-row">
-              <div class="try-label">Color <b data-try-color-name>Burgundy</b></div>
-              <div class="swatches" data-try-colors role="radiogroup" aria-label="Device color"></div>
+            <div class="try-now">
+              <span class="try-label">Now showing</span>
+              <b data-try-wall-name></b>
             </div>
             <div class="try-row">
-              <div class="try-label">Wallpaper <b data-try-wall-name></b></div>
-              <div class="walls" data-try-walls role="radiogroup" aria-label="Wallpaper"></div>
+              <div class="try-label">Device color <b data-try-color-name>Burgundy</b></div>
+              <div class="swatches" data-try-colors role="radiogroup" aria-label="Device color"></div>
             </div>
             <a class="btn btn-gilt btn-block" data-try-cta href="checkout.html?pack=phone">Get the Phone Pack · <span data-price="phone">€9.99</span></a>
             <p class="try-alt">Or get every phone and desktop painting for <a href="checkout.html?pack=complete"><b data-price="complete">€20.99</b></a></p>

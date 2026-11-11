@@ -52,29 +52,48 @@
     if (current && lb.classList.contains('open')) openLightbox(current);
   });
 
-  /* ---------- Try it on ---------- */
-  const tryTilt = $('[data-try-tilt]'), tryStage = $('[data-try-stage]');
-  const state = { device: 'iphone', color: { iphone: 'burgundy', air: 'midnight', pro: 'space-black' }, wall: { phone: 'p1', desktop: 'd2' } };
-  let tryDev = null;
+  /* ---------- Try it on: swipe wallpapers on a real device ---------- */
+  const tryWrap = $('[data-try-device-wrap]'), tryStage = $('[data-try-stage]'), dotsEl = $('[data-try-dots]');
+  const state = { device: 'iphone', color: { iphone: 'burgundy', air: 'midnight', pro: 'space-black' }, idx: { phone: 0, desktop: 0 } };
+  let tryDev = null, track = null;
+  const kindOf = () => DV.DEVICES[state.device].kind;
+  const listOf = k => (k === 'phone' ? P : D);
   function renderTry() {
-    const D0 = DV.DEVICES[state.device], kind = D0.kind;
-    const w = byId(state.wall[kind]);
-    tryDev = DV.make(state.device, state.color[state.device], w.src, { lock: kind === 'phone', alt: `${w.title} on ${D0.name}` });
-    tryTilt.replaceChildren(tryDev);
-    tryStage.dataset.kind = kind;
-    // colors
+    const D0 = DV.DEVICES[state.device], kind = D0.kind, list = listOf(kind);
+    tryDev = DV.make(state.device, state.color[state.device], list[0].thumb, { lock: kind === 'phone' });
+    const screen = $('.dev-screen', tryDev);
+    $('.dev-wall', screen).remove();
+    track = document.createElement('div'); track.className = 'try-track';
+    track.innerHTML = list.map((w, i) => `<img src="${i < 2 ? w.src : w.thumb}" data-full="${w.src}" alt="${w.title} on ${D0.name}" ${i ? 'loading="lazy"' : ''} decoding="async" draggable="false">`).join('');
+    screen.prepend(track);
+    tryWrap.replaceChildren(tryDev); tryStage.dataset.kind = kind;
+    dotsEl.innerHTML = list.map(() => '<i></i>').join('');
     $('[data-try-colors]').innerHTML = D0.colors.map(c => `<button role="radio" aria-checked="${c.id === state.color[state.device]}" data-c="${c.id}" title="${c.name}" style="--sw:${c.swatch}"><span class="sr">${c.name}</span></button>`).join('');
     $('[data-try-color-name]').textContent = D0.colors.find(c => c.id === state.color[state.device]).name;
-    // wallpapers
-    const list = kind === 'phone' ? P : D;
-    $('[data-try-walls]').innerHTML = list.map(x => `<button role="radio" aria-checked="${x.id === state.wall[kind]}" data-w="${x.id}" class="${kind}" title="${x.title}"><img src="${x.thumb}" alt="${x.title}" loading="lazy"></button>`).join('');
-    $('[data-try-wall-name]').textContent = w.title;
-    // CTA
     const pack = kind === 'phone' ? 'phone' : 'desktop';
     const cta = $('[data-try-cta]'); cta.href = `checkout.html?pack=${pack}`;
     cta.innerHTML = `Get the ${G.packs[pack].name} · <span data-price="${pack}">${C.format(C.price(pack))}</span>`;
+    requestAnimationFrame(() => { goTo(state.idx[kind], false); });
+    let t = 0;
+    track.addEventListener('scroll', () => { clearTimeout(t); t = setTimeout(sync, 60); }, { passive: true });
     DV.preload(state.device);
   }
+  function sync() {
+    const kind = kindOf(), list = listOf(kind);
+    const i = Math.max(0, Math.min(list.length - 1, Math.round(track.scrollLeft / track.clientWidth)));
+    state.idx[kind] = i;
+    $$('i', dotsEl).forEach((d, j) => d.classList.toggle('on', j === i));
+    $('[data-try-wall-name]').textContent = list[i].title;
+    // upgrade neighbours to full resolution
+    $$('img', track).forEach((im, j) => { if (Math.abs(j - i) <= 1 && im.src !== new URL(im.dataset.full, location.href).href) im.src = im.dataset.full; });
+  }
+  function goTo(i, smooth = true) {
+    const n = listOf(kindOf()).length; i = (i + n) % n;
+    track.scrollTo({ left: i * track.clientWidth, behavior: smooth && !FX.reduced ? 'smooth' : 'auto' });
+    if (!smooth) sync();
+  }
+  $('[data-try-prev]').addEventListener('click', () => goTo(state.idx[kindOf()] - 1));
+  $('[data-try-next]').addEventListener('click', () => goTo(state.idx[kindOf()] + 1));
   $$('[data-try-device]').forEach(b => b.addEventListener('click', () => {
     state.device = b.dataset.tryDevice;
     $$('[data-try-device]').forEach(x => x.setAttribute('aria-selected', x === b));
@@ -86,38 +105,16 @@
     $$('[data-c]').forEach(x => x.setAttribute('aria-checked', x === b));
     $('[data-try-color-name]').textContent = b.title;
   });
-  $('[data-try-walls]').addEventListener('click', e => {
-    const b = e.target.closest('[data-w]'); if (!b) return;
-    const kind = DV.DEVICES[state.device].kind; state.wall[kind] = b.dataset.w;
-    DV.setWallpaper(tryDev, byId(b.dataset.w).src);
-    $$('[data-w]').forEach(x => x.setAttribute('aria-checked', x === b));
-    $('[data-try-wall-name]').textContent = byId(b.dataset.w).title;
-  });
+  addEventListener('resize', () => track && goTo(state.idx[kindOf()], false));
   renderTry();
-
-  // Drag / hover to tilt in 3D
-  (function tilt() {
-    let rx = 0, ry = 0, tx = 0, ty = 0, raf = 0, dragging = false, sx = 0, sy = 0, auto = true;
-    const loop = () => {
-      rx += (tx - rx) * .12; ry += (ty - ry) * .12;
-      tryTilt.style.transform = `rotateX(${rx}deg) rotateY(${ry}deg)`;
-      tryTilt.style.setProperty('--gx', (50 + ry * 1.6) + '%');
-      if (Math.abs(tx - rx) > .05 || Math.abs(ty - ry) > .05 || auto) raf = requestAnimationFrame(loop); else raf = 0;
-    };
-    const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
-    const t0 = performance.now();
-    const idle = () => { if (!auto) return; const t = (performance.now() - t0) / 1000; ty = Math.sin(t * .7) * 14; tx = Math.sin(t * .5) * 3; kick(); requestAnimationFrame(idle); };
-    if (!FX.reduced) requestAnimationFrame(idle);
-    const stop = () => { auto = false; $('[data-try-hint]').classList.add('gone'); };
-    tryStage.addEventListener('pointerdown', e => { if (e.target.closest('button')) return; dragging = true; sx = e.clientX; sy = e.clientY; stop(); tryStage.setPointerCapture(e.pointerId); });
-    tryStage.addEventListener('pointermove', e => {
-      if (dragging) { ty = Math.max(-38, Math.min(38, (e.clientX - sx) * .35)); tx = Math.max(-16, Math.min(16, -(e.clientY - sy) * .15)); kick(); }
-      else if (e.pointerType === 'mouse') { const r = tryStage.getBoundingClientRect(); stop(); ty = ((e.clientX - r.left) / r.width - .5) * 36; tx = -((e.clientY - r.top) / r.height - .5) * 14; kick(); }
-    });
-    const end = () => { if (!dragging) return; dragging = false; tx = 0; ty = 0; kick(); };
-    tryStage.addEventListener('pointerup', end); tryStage.addEventListener('pointercancel', end);
-    tryStage.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') { tx = 0; ty = 0; kick(); } });
-  })();
+  // a single gentle peek so people see it swipes
+  if (!FX.reduced) {
+    const pio = new IntersectionObserver(([e]) => {
+      if (!e.isIntersecting) return; pio.disconnect();
+      setTimeout(() => { if (state.idx[kindOf()] === 0) { goTo(1); setTimeout(() => goTo(0), 1100); } }, 700);
+    }, { threshold: .6 });
+    pio.observe(tryStage);
+  }
 
   /* ---------- Gallery (bento) ---------- */
   const order = [];
