@@ -34,38 +34,38 @@ window.GLAZE = {
   packs: {
     phone: {
       name: 'Phone Pack',
-      tagline: 'Every painting, cut for your phone.',
+      tagline: 'Every painting, made for your phone.',
       device: 'phone',
       features: [
-        'The full phone collection',
-        'Native vertical crops for iPhone & Android',
-        'Lock screen & home screen ready',
-        'Instant download after payment'
+        'The whole phone collection',
+        'Recomposed for iPhone and Android',
+        'Looks great on lock and home screen',
+        'Download right after you pay'
       ],
       cover: ['assets/img/p1.jpg', 'assets/img/p3.jpg', 'assets/img/p6.jpg']
     },
     desktop: {
       name: 'Desktop Pack',
-      tagline: 'Gallery light for your laptop and monitor.',
+      tagline: 'Turn your laptop into a gallery wall.',
       device: 'desktop',
       features: [
-        'The full desktop collection',
-        '4K files for Mac & Windows',
-        'Laptop, monitor & tablet ready',
-        'Instant download after payment'
+        'The whole desktop collection',
+        '4K files for Mac and Windows',
+        'Fits laptops, monitors and tablets',
+        'Download right after you pay'
       ],
       cover: ['assets/img/d2.jpg', 'assets/img/d6.jpg', 'assets/img/d3.jpg']
     },
     complete: {
       name: 'Complete Collection',
-      tagline: 'Phone + Desktop. Every screen you own.',
+      tagline: 'Phone and desktop. Every screen covered.',
       device: 'both',
       featured: true,
       features: [
         'Everything in the Phone Pack',
         'Everything in the Desktop Pack',
-        'One look across every screen',
-        'Instant download after payment'
+        'The same look on every screen you own',
+        'Download right after you pay'
       ],
       cover: ['assets/img/d4.jpg', 'assets/img/p2.jpg', 'assets/img/d7.jpg']
     }
